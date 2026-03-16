@@ -21,7 +21,7 @@ from Bio.PDB.Polypeptide import three_to_index, index_to_one
 from LM_GNN_utils.data_utils import ProteinGraphDataset_v2
 from LM_GNN_utils.model_utils import PLM_GVP, PLM_GAT, PLM_GIN
 
-STRUCTURE_ROOT = "structure_data/deamid"
+STRUCTURE_ROOT = "Structure_data"
 CHAINS_ORDER = ["A", "B", "C", "D", "E", "F"]
 
 def normalize_name(name):
@@ -314,7 +314,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--data_file", required=True)
     parser.add_argument('--loss_type', type=str, default='ce', choices=['ce', 'focal'], help="Loss function: ce (weighted cross-entropy) or focal")
-    parser.add_argument("--structure_dir", default="structure_data/deamid")
+    parser.add_argument("--structure_dir", default="Structure_data")
     parser.add_argument("--save_dir", default="./logs_deam")
     parser.add_argument("--num_workers", type=int, default=0)
     parser.add_argument("--batch_size", type=int, default=8)

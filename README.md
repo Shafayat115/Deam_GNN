@@ -2,10 +2,10 @@
 
 Deam_GNN contains training code for deamidation prediction using:
 
-- an **ESM-only baseline** (`esm_deamidation.py`)
-- an **ESM + structure-aware GNN model** (`deamid_GNN.py`)
+- an **ESM-only baseline** (`ESM_deamidation.py`)
+- an **ESM + structure-aware GNN model** (`Deamid_GNN.py`)
 
-The repository currently includes utility modules under `LM_GNN_utils/`, a small dummy CSV under `Data/`, example structure files under `structure_data/`, and an `environment.yml` file for creating the software environment. The included CSV and structure files are **example/demo data only** and are meant to show the expected format and repository structure. They are not intended to be a full training dataset.
+The repository currently includes utility modules under `LM_GNN_utils/`, a small dummy CSV under `Data/`, example structure files under `Structure_data/`, and an `environment.yml` file for creating the software environment. The included CSV and structure files are **example/demo data only** and are meant to show the expected format and repository structure. They are not intended to be a full training dataset.
 
 ---
 
@@ -20,11 +20,11 @@ Deam_GNN/
 │   ├── data_utils.py
 │   ├── gvp_utils.py
 │   └── model_utils.py
-├── structure_data/
-│   └── deamid/
-│       ├── ...
-├── deamid_GNN.py
-├── esm_deamidation.py
+├── Structure_data/
+│   ├── ...
+├── Data_Split.py
+├── Deamid_GNN.py
+├── ESM_deamidation.py
 ├── environment.yml
 └── README.md
 ```
@@ -34,18 +34,190 @@ Deam_GNN/
 ## Included in this repository
 
 - `Data/dummy.csv`: example input table showing expected format
+- `Data_Split.py`: data partitioning script
 - `LM_GNN_utils/`: utility code for data processing and model components
-- `esm_deamidation.py`: sequence-only ESM baseline
-- `deamid_GNN.py`: ESM + GNN training script
+- `ESM_deamidation.py`: sequence-only ESM baseline
+- `Deamid_GNN.py`: ESM + GNN training script
 - `environment.yml`: conda environment specification
 
 ---
 
 ## You need to provide
 
-- Your real CSV dataset
+- Your dataset
 - Your PDB structure files
 - The required ESM model checkpoint files under `esm_models/`
+
+---
+
+## Preparing train/test and CV splits with `Data_Split.py`
+
+This repository also includes a data preparation script, `Data_Split.py`, which can be used to generate:
+
+- a combined train/test CSV
+- multiple window-based split assignments
+- per-window and per-cutoff summary CSV files
+- diagnostic plots showing class balance and cluster composition across folds
+
+This is useful for preparing cross-validation splits before training the ESM-only or ESM+GNN models.
+
+### What `Data_Split.py` does
+
+The script:
+
+1. Loads a main dataset and a held-out test dataset
+2. Filters rows based on residue context and pH settings
+3. Extracts the sequence from chain-specific sequence columns
+4. Generates local window sequences around the target residue
+5. Groups training samples by window sequence
+6. Assigns grouped samples into approximately balanced folds
+7. Refines folds to improve class balance
+8. Writes a combined output CSV containing fold assignments
+9. Writes summary CSV files for each window size and rate cutoff
+10. Generates plots for split quality and fold composition
+
+### Expected input files
+
+By default, the script uses:
+
+```python
+main_csv = "Data/input.csv"
+test_csv = "Data/test.csv"
+output_csv = "Data/combined_train_test.csv"
+summary_dir = "summaries_joint"
+outdir = "plots_iso_deam_splits"
+window_min = 1
+window_max = 6
+n_folds = 5
+rate_cutoffs = [2, 5]
+```
+
+### Required CSV inputs
+
+You should provide:
+
+- `Data/input.csv`: main training dataset
+- `Data/test.csv`: held-out test dataset
+
+### Expected columns
+
+The script expects columns such as:
+
+- `MolName`
+- `Chain`
+- `ResNum`
+- `Rate`
+- `N+1`
+- Optionally `pH`
+- Chain-specific sequence columns such as `ChainA_Seq`, `ChainB_Seq`, `ChainC_Seq`, `ChainD_Seq`, `ChainE_Seq`, `ChainF_Seq`
+
+It also renames these columns if present:
+
+- `N.1` → `N-1`
+- `N.1.1` → `N+1`
+
+### Filtering behavior
+
+For the main dataset:
+
+- Rows with `N+1 == "PRO"` are removed
+- If `pH` is present, only rows with `pH` in `[5.5, 6.0]` are kept
+
+For the test dataset:
+
+- Rows with `N+1 == "PRO"` are removed
+- `pH` filtering is skipped
+
+### Output files
+
+After running `Data_Split.py`, the script produces:
+
+#### 1. Combined dataset
+
+`Data/combined_train_test.csv`
+
+This file contains:
+
+- The merged training and test datasets
+- An `is_test` column
+- Generated binary target columns such as `Rate_cut_2` and `Rate_cut_5`
+- Generated window sequence columns such as `WindowSeq_win_1`, `WindowSeq_win_2`, etc.
+- Generated fold assignment columns such as `win_1_cut_2_ClusterID`, `win_3_cut_5_ClusterID`, etc.
+
+#### 2. Per-split summary CSV files
+
+Written to `summaries_joint/`. Example files:
+
+```text
+summary_win1_cut2.csv
+summary_win3_cut5.csv
+```
+
+These contain per-fold statistics such as:
+
+- Total samples
+- Number of positives
+- Number of negatives
+- Number of clusters
+- Number of mixed clusters
+- Positive percentage
+
+#### 3. Diagnostic plots
+
+Written to `plots_iso_deam_splits/`. These plots help inspect:
+
+- Cluster composition by window size
+- Fold-level class balance
+- Positive fraction across folds
+- Stacked summaries of negatives, positives, and mixed clusters
+
+### How to run `Data_Split.py`
+
+```bash
+python Data_Split.py
+```
+
+The script uses file paths and configuration values defined at the top of the file. Update these variables before running if needed:
+
+```python
+main_csv = "Data/input.csv"
+test_csv = "Data/test.csv"
+output_csv = "Data/combined_train_test.csv"
+summary_dir = "summaries_joint"
+outdir = "plots_iso_deam_splits"
+window_min = 1
+window_max = 6
+n_folds = 5
+rate_cutoffs = [2, 5]
+```
+
+### How to use the generated split file for training
+
+After `Data_Split.py` finishes, use the generated combined CSV for model training:
+
+- `is_test == 0`: training/CV samples
+- `is_test == 1`: held-out test samples
+
+For a chosen window size `w`, cutoff `c`, and fold `f`:
+
+- **Training set**: rows with `is_test == 0` and `win_<w>_cut_<c>_ClusterID != f`
+- **Validation set**: rows with `is_test == 0` and `win_<w>_cut_<c>_ClusterID == f`
+- **Test set**: rows with `is_test == 1`
+
+Example logic:
+
+```python
+train_df = full_df[(full_df["is_test"] == 0) & (full_df[f"win_{w}_cut_{c}_ClusterID"] != f)]
+val_df   = full_df[(full_df["is_test"] == 0) & (full_df[f"win_{w}_cut_{c}_ClusterID"] == f)]
+test_df  = full_df[full_df["is_test"] == 1]
+```
+
+### Notes
+
+- `Data_Split.py` is intended for split generation and dataset preparation only — it does not train a model directly
+- The generated split columns can be used by both `ESM_deamidation.py` and `Deamid_GNN.py`
+- If the number of unique training groups is too small for a particular window size, that split may be skipped
+- The script currently uses configuration values defined inside the file rather than command-line arguments; a future improvement would be to expose these as CLI flags such as `--main_csv`, `--test_csv`, and `--n_folds`
 
 ---
 
@@ -79,17 +251,17 @@ Recommended structure:
 
 ```text
 Deam_GNN/
-├── structure_data/
+├── Structure_data/
 │   └── deamid/
 │       ├── 1abc.pdb
 │       ├── 2xyz.pdb
 │       └── ...
 ```
 
-By default, `deamid_GNN.py` expects structure files under:
+By default, `Deamid_GNN.py` expects structure files under:
 
 ```text
-structure_data/deamid/
+Structure_data/deamid/
 ```
 
 This repository includes example structure files corresponding to the dummy/example dataset. For real training and evaluation, you should replace or extend these with your own structure files.
@@ -123,7 +295,7 @@ The main model used by the scripts is:
 facebook/esm2_t6_8M_UR50D
 ```
 
-If you use the alternate PTM option in `esm_deamidation.py`, you may also need:
+If you use the alternate PTM option in `ESM_deamidation.py`, you may also need:
 
 ```text
 esm_models/ESM2-650M_paired-fine-tuning
@@ -181,13 +353,13 @@ Make sure the model files are present locally before running either script.
 The sequence-only baseline is:
 
 ```text
-esm_deamidation.py
+ESM_deamidation.py
 ```
 
 ### Example command
 
 ```bash
-python esm_deamidation.py \
+python ESM_deamidation.py \
   --data_file Data/dummy.csv \
   --save_dir logs_esm \
   --batch_size 32 \
@@ -233,15 +405,15 @@ python esm_deamidation.py \
 The structure-aware model is:
 
 ```text
-deamid_GNN.py
+Deamid_GNN.py
 ```
 
 ### Example command
 
 ```bash
-python deamid_GNN.py \
+python Deamid_GNN.py \
   --data_file Data/dummy.csv \
-  --structure_dir structure_data/deamid \
+  --structure_dir Structure_data/deamid \
   --save_dir logs_gnn \
   --batch_size 8 \
   --n_epochs 20 \
@@ -258,9 +430,9 @@ python deamid_GNN.py \
 ### Example with LoRA
 
 ```bash
-python deamid_GNN.py \
+python Deamid_GNN.py \
   --data_file Data/dummy.csv \
-  --structure_dir structure_data/deamid \
+  --structure_dir Structure_data/deamid \
   --save_dir logs_gnn_lora \
   --batch_size 8 \
   --n_epochs 20 \
@@ -319,16 +491,16 @@ python deamid_GNN.py \
 1. Clone the repository
 2. Create the conda environment
 3. Download the ESM checkpoint into `esm_models/`
-4. Test the pipeline using the included `Data/dummy.csv` and example structure files in `structure_data/deamid/`
+4. Test the pipeline using the included `Data/dummy.csv` and example structure files in `Structure_data/deamid/`
 5. Replace the dummy/example data with your real CSV and real PDB files for actual experiments
-6. Run `esm_deamidation.py` for the sequence baseline
-7. Run `deamid_GNN.py` for the structure-aware model
+6. Run `ESM_deamidation.py` for the sequence baseline
+7. Run `Deamid_GNN.py` for the structure-aware model
 
 ---
 
 ## Dummy data note
 
-The included `Data/dummy.csv` and the example files under `structure_data/deamid/` are provided only to demonstrate the expected project layout, file formats, and execution workflow. They are not intended to represent the full dataset required for real model development, benchmarking, or final experiments.
+The included `Data/dummy.csv` and the example files under `Structure_data/deamid/` are provided only to demonstrate the expected project layout, file formats, and execution workflow. They are not intended to represent the full dataset required for real model development, benchmarking, or final experiments.
 
 For actual use, you should provide your own complete CSV dataset and matching structure files.
 
