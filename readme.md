@@ -5,7 +5,7 @@ Deam_GNN contains training code for deamidation prediction using:
 - an **ESM-only baseline** (`esm_deamidation.py`)
 - an **ESM + structure-aware GNN model** (`deamid_GNN.py`)
 
-The repository currently includes utility modules under `LM_GNN_utils/`, a small dummy CSV under `Data/`, and an `environment.yml` file for creating the software environment. The included CSV is **dummy/example data only** and is meant to show the expected format and repository structure. It is not intended to be a full training dataset.
+The repository currently includes utility modules under `LM_GNN_utils/`, a small dummy CSV under `Data/`, example structure files under `structure_data/`, and an `environment.yml` file for creating the software environment. The included CSV and structure files are **example/demo data only** and are meant to show the expected format and repository structure. They are not intended to be a full training dataset.
 
 ---
 
@@ -20,6 +20,9 @@ Deam_GNN/
 │   ├── data_utils.py
 │   ├── gvp_utils.py
 │   └── model_utils.py
+├── structure_data/
+│   └── deamid/
+│       ├── ...
 ├── deamid_GNN.py
 ├── esm_deamidation.py
 ├── environment.yml
@@ -88,6 +91,8 @@ By default, `deamid_GNN.py` expects structure files under:
 ```text
 structure_data/deamid/
 ```
+
+This repository includes example structure files corresponding to the dummy/example dataset. For real training and evaluation, you should replace or extend these with your own structure files.
 
 Rows without matching structures or chains may be skipped during preprocessing.
 
@@ -314,8 +319,8 @@ python deamid_GNN.py \
 1. Clone the repository
 2. Create the conda environment
 3. Download the ESM checkpoint into `esm_models/`
-4. Add your real CSV file
-5. Add your PDB files under `structure_data/deamid/`
+4. Test the pipeline using the included `Data/dummy.csv` and example structure files in `structure_data/deamid/`
+5. Replace the dummy/example data with your real CSV and real PDB files for actual experiments
 6. Run `esm_deamidation.py` for the sequence baseline
 7. Run `deamid_GNN.py` for the structure-aware model
 
@@ -323,9 +328,9 @@ python deamid_GNN.py \
 
 ## Dummy data note
 
-The included `Data/dummy.csv` is only a placeholder/example file. It is useful for showing the expected repository structure and input style, but it is not meant to be used as a real training dataset.
+The included `Data/dummy.csv` and the example files under `structure_data/deamid/` are provided only to demonstrate the expected project layout, file formats, and execution workflow. They are not intended to represent the full dataset required for real model development, benchmarking, or final experiments.
 
-Structure files are also not included in this repository. You must provide your own PDB files under `structure_data/deamid/`.
+For actual use, you should provide your own complete CSV dataset and matching structure files.
 
 ---
 
@@ -355,8 +360,9 @@ If `conda env create -f environment.yml` fails, remove any hardcoded `prefix:` l
 
 ## Notes
 
+- You can use the included dummy CSV and example structure files for a quick test run
 - Replace `Data/dummy.csv` with your actual dataset before real training
-- Add your own structure files before running the GNN model
+- Replace or extend the example structure files before running full experiments
 - Make sure the ESM checkpoint is downloaded locally before running either script
 - It is recommended to standardize both scripts to use the same `esm_models/` path
 
