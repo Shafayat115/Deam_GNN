@@ -5,7 +5,15 @@ Deam_GNN contains training code for deamidation prediction using:
 - an **ESM-only baseline** (`ESM_deamidation.py`)
 - an **ESM + structure-aware GNN model** (`Deamid_GNN.py`)
 
-The repository currently includes utility modules under `LM_GNN_utils/`, a small dummy CSV under `Data/`, example structure files under `Structure_data/`, and an `environment.yml` file for creating the software environment. The included CSV and structure files are **example/demo data only** and are meant to show the expected format and repository structure. They are not intended to be a full training dataset.
+The repository includes:
+
+- utility modules under `LM_GNN_utils/`
+- a dummy example CSV under `Data/`
+- example structure files under `Structure_data/`
+- a data splitting script (`Data_Split.py`)
+- an `environment.yml` file for environment setup
+
+The included CSV and structure files are **example/demo data only**. They are provided to show the expected format and workflow, not as a full training dataset.
 
 ---
 
@@ -50,40 +58,27 @@ Deam_GNN/
 
 ---
 
-## Preparing train/test and CV splits with `Data_Split.py`
+## Preparing CV splits with `Data_Split.py`
 
-This repository also includes a data preparation script, `Data_Split.py`, which can be used to generate:
+`Data_Split.py` prepares cross-validation splits from a single input CSV.
 
-- a combined train/test CSV
-- multiple window-based split assignments
-- per-window and per-cutoff summary CSV files
-- diagnostic plots showing class balance and cluster composition across folds
+It:
 
-This is useful for preparing cross-validation splits before training the ESM-only or ESM+GNN models.
+1. Loads and filters the dataset
+2. Extracts the sequence from chain-specific sequence columns
+3. Generates local window sequences around the target residue
+4. Groups samples by window sequence
+5. Assigns grouped samples into approximately balanced folds
+6. Refines folds to improve class balance
+7. Writes an output CSV containing fold assignments
+8. Writes summary CSV files
+9. Generates diagnostic plots
 
-### What `Data_Split.py` does
-
-The script:
-
-1. Loads a main dataset and a held-out test dataset
-2. Filters rows based on residue context and pH settings
-3. Extracts the sequence from chain-specific sequence columns
-4. Generates local window sequences around the target residue
-5. Groups training samples by window sequence
-6. Assigns grouped samples into approximately balanced folds
-7. Refines folds to improve class balance
-8. Writes a combined output CSV containing fold assignments
-9. Writes summary CSV files for each window size and rate cutoff
-10. Generates plots for split quality and fold composition
-
-### Expected input files
-
-By default, the script uses:
+### Default configuration
 
 ```python
 main_csv = "Data/input.csv"
-test_csv = "Data/test.csv"
-output_csv = "Data/combined_train_test.csv"
+output_csv = "Data/input_with_splits.csv"
 summary_dir = "summaries_joint"
 outdir = "plots_iso_deam_splits"
 window_min = 1
@@ -92,12 +87,11 @@ n_folds = 5
 rate_cutoffs = [2, 5]
 ```
 
-### Required CSV inputs
+### Required input
 
 You should provide:
 
-- `Data/input.csv`: main training dataset
-- `Data/test.csv`: held-out test dataset
+- `Data/input.csv`: the dataset to split into CV folds
 
 ### Expected columns
 
@@ -111,113 +105,50 @@ The script expects columns such as:
 - Optionally `pH`
 - Chain-specific sequence columns such as `ChainA_Seq`, `ChainB_Seq`, `ChainC_Seq`, `ChainD_Seq`, `ChainE_Seq`, `ChainF_Seq`
 
-It also renames these columns if present:
+If present, the script also renames:
 
 - `N.1` → `N-1`
 - `N.1.1` → `N+1`
 
 ### Filtering behavior
 
-For the main dataset:
-
-- Rows with `N+1 == "PRO"` are removed
-- If `pH` is present, only rows with `pH` in `[5.5, 6.0]` are kept
-
-For the test dataset:
-
-- Rows with `N+1 == "PRO"` are removed
-- `pH` filtering is skipped
+The script removes rows with `N+1 == "PRO"`. If `pH` is present, it keeps only rows with `pH` in `[5.5, 6.0]`.
 
 ### Output files
 
-After running `Data_Split.py`, the script produces:
+After running `Data_Split.py`, the script generates:
 
-#### 1. Combined dataset
+- `Data/input_with_splits.csv`
+- Summary CSV files under `summaries_joint/`
+- Diagnostic plots under `plots_iso_deam_splits/`
 
-`Data/combined_train_test.csv`
+The output CSV contains:
 
-This file contains:
-
-- The merged training and test datasets
-- An `is_test` column
 - Generated binary target columns such as `Rate_cut_2` and `Rate_cut_5`
 - Generated window sequence columns such as `WindowSeq_win_1`, `WindowSeq_win_2`, etc.
 - Generated fold assignment columns such as `win_1_cut_2_ClusterID`, `win_3_cut_5_ClusterID`, etc.
 
-#### 2. Per-split summary CSV files
-
-Written to `summaries_joint/`. Example files:
-
-```text
-summary_win1_cut2.csv
-summary_win3_cut5.csv
-```
-
-These contain per-fold statistics such as:
-
-- Total samples
-- Number of positives
-- Number of negatives
-- Number of clusters
-- Number of mixed clusters
-- Positive percentage
-
-#### 3. Diagnostic plots
-
-Written to `plots_iso_deam_splits/`. These plots help inspect:
-
-- Cluster composition by window size
-- Fold-level class balance
-- Positive fraction across folds
-- Stacked summaries of negatives, positives, and mixed clusters
-
-### How to run `Data_Split.py`
+### How to run
 
 ```bash
 python Data_Split.py
 ```
 
-The script uses file paths and configuration values defined at the top of the file. Update these variables before running if needed:
+If needed, edit the configuration values at the top of the script before running.
 
-```python
-main_csv = "Data/input.csv"
-test_csv = "Data/test.csv"
-output_csv = "Data/combined_train_test.csv"
-summary_dir = "summaries_joint"
-outdir = "plots_iso_deam_splits"
-window_min = 1
-window_max = 6
-n_folds = 5
-rate_cutoffs = [2, 5]
-```
-
-### How to use the generated split file for training
-
-After `Data_Split.py` finishes, use the generated combined CSV for model training:
-
-- `is_test == 0`: training/CV samples
-- `is_test == 1`: held-out test samples
+### How to use the generated splits
 
 For a chosen window size `w`, cutoff `c`, and fold `f`:
 
-- **Training set**: rows with `is_test == 0` and `win_<w>_cut_<c>_ClusterID != f`
-- **Validation set**: rows with `is_test == 0` and `win_<w>_cut_<c>_ClusterID == f`
-- **Test set**: rows with `is_test == 1`
-
-Example logic:
-
 ```python
-train_df = full_df[(full_df["is_test"] == 0) & (full_df[f"win_{w}_cut_{c}_ClusterID"] != f)]
-val_df   = full_df[(full_df["is_test"] == 0) & (full_df[f"win_{w}_cut_{c}_ClusterID"] == f)]
-test_df  = full_df[full_df["is_test"] == 1]
+train_df = full_df[full_df[f"win_{w}_cut_{c}_ClusterID"] != f]
+val_df   = full_df[full_df[f"win_{w}_cut_{c}_ClusterID"] == f]
 ```
 
 ### Notes
 
-- `Data_Split.py` is intended for split generation and dataset preparation only — it does not train a model directly
+- `Data_Split.py` only prepares splits — it does not train a model
 - The generated split columns can be used by both `ESM_deamidation.py` and `Deamid_GNN.py`
-- If the number of unique training groups is too small for a particular window size, that split may be skipped
-- The script currently uses configuration values defined inside the file rather than command-line arguments; a future improvement would be to expose these as CLI flags such as `--main_csv`, `--test_csv`, and `--n_folds`
 
 ---
 
@@ -412,7 +343,7 @@ Deamid_GNN.py
 ```bash
 python Deamid_GNN.py \
   --data_file Data/dummy.csv \
-  --structure_dir Structure_data\
+  --structure_dir Structure_data/ \
   --save_dir logs_gnn \
   --batch_size 8 \
   --n_epochs 20 \
@@ -431,7 +362,7 @@ python Deamid_GNN.py \
 ```bash
 python Deamid_GNN.py \
   --data_file Data/dummy.csv \
-  --structure_dir Structure_data\
+  --structure_dir Structure_data/ \
   --save_dir logs_gnn_lora \
   --batch_size 8 \
   --n_epochs 20 \
