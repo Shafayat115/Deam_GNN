@@ -252,7 +252,6 @@ Recommended structure:
 ```text
 Deam_GNN/
 ├── Structure_data/
-│   └── deamid/
 │       ├── 1abc.pdb
 │       ├── 2xyz.pdb
 │       └── ...
@@ -261,7 +260,7 @@ Deam_GNN/
 By default, `Deamid_GNN.py` expects structure files under:
 
 ```text
-Structure_data/deamid/
+Structure_data/
 ```
 
 This repository includes example structure files corresponding to the dummy/example dataset. For real training and evaluation, you should replace or extend these with your own structure files.
@@ -413,7 +412,7 @@ Deamid_GNN.py
 ```bash
 python Deamid_GNN.py \
   --data_file Data/dummy.csv \
-  --structure_dir Structure_data/deamid \
+  --structure_dir Structure_data\
   --save_dir logs_gnn \
   --batch_size 8 \
   --n_epochs 20 \
@@ -432,7 +431,7 @@ python Deamid_GNN.py \
 ```bash
 python Deamid_GNN.py \
   --data_file Data/dummy.csv \
-  --structure_dir Structure_data/deamid \
+  --structure_dir Structure_data\
   --save_dir logs_gnn_lora \
   --batch_size 8 \
   --n_epochs 20 \
@@ -491,7 +490,7 @@ python Deamid_GNN.py \
 1. Clone the repository
 2. Create the conda environment
 3. Download the ESM checkpoint into `esm_models/`
-4. Test the pipeline using the included `Data/dummy.csv` and example structure files in `Structure_data/deamid/`
+4. Test the pipeline using the included `Data/dummy.csv` and example structure files in `Structure_data/`
 5. Replace the dummy/example data with your real CSV and real PDB files for actual experiments
 6. Run `ESM_deamidation.py` for the sequence baseline
 7. Run `Deamid_GNN.py` for the structure-aware model
@@ -500,7 +499,7 @@ python Deamid_GNN.py \
 
 ## Dummy data note
 
-The included `Data/dummy.csv` and the example files under `Structure_data/deamid/` are provided only to demonstrate the expected project layout, file formats, and execution workflow. They are not intended to represent the full dataset required for real model development, benchmarking, or final experiments.
+The included `Data/dummy.csv` and the example files under `Structure_data/` are provided only to demonstrate the expected project layout, file formats, and execution workflow. They are not intended to represent the full dataset required for real model development, benchmarking, or final experiments.
 
 For actual use, you should provide your own complete CSV dataset and matching structure files.
 
