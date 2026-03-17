@@ -6,7 +6,7 @@
 </p>
 
 <p align="center">
-  <em>Figure 1. Overview of the deamidation prediction workflow using sequence-based and structure-aware models.</em>
+  <em>Figure 1. Overview of the deamidation prediction workflow using sequence and structures.</em>
 </p>
 
 # Deam_GNN
