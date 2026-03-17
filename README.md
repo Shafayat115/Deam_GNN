@@ -8,7 +8,7 @@ Deam_GNN contains training code for deamidation prediction using:
 The repository includes:
 
 - utility modules under `LM_GNN_utils/`
-- a dummy example CSV under `Data/`
+- an example dataset under `Data/`
 - example structure files under `Structure_data/`
 - a data splitting script (`Data_Split.py`)
 - an `environment.yml` file for environment setup
@@ -22,7 +22,7 @@ The included CSV and structure files are **example/demo data only**. They are pr
 ```text
 Deam_GNN/
 ├── Data/
-│   └── dummy.csv
+│   └── example.csv
 ├── LM_GNN_utils/
 │   ├── __init__.py
 │   ├── data_utils.py
@@ -41,7 +41,7 @@ Deam_GNN/
 
 ## Included in this repository
 
-- `Data/dummy.csv`: example input table showing expected format
+- `Data/example.csv`: example input table showing expected format
 - `Data_Split.py`: data partitioning script
 - `LM_GNN_utils/`: utility code for data processing and model components
 - `ESM_deamidation.py`: sequence-only ESM baseline
@@ -172,7 +172,7 @@ Depending on your dataset format, the code may also expect chain-specific sequen
 - `ChainA_Seq`
 - `ChainB_Seq`
 
-The included `Data/dummy.csv` is only a placeholder/example file.
+The included `Data/example.csv` is only a placeholder/example file.
 
 ### 2. Structure files
 
@@ -194,7 +194,7 @@ By default, `Deamid_GNN.py` expects structure files under:
 Structure_data/
 ```
 
-This repository includes example structure files corresponding to the dummy/example dataset. For real training and evaluation, you should replace or extend these with your own structure files.
+This repository includes example structure files corresponding to the example dataset. For real training and evaluation, you should replace or extend these with your own structure files.
 
 Rows without matching structures or chains may be skipped during preprocessing.
 
@@ -205,6 +205,8 @@ The scripts load ESM checkpoints locally, so you need to download the model file
 ```text
 esm_models/
 ```
+
+Or you can update the code to call it from hugginface directly.
 
 Recommended structure:
 
@@ -290,7 +292,7 @@ ESM_deamidation.py
 
 ```bash
 python ESM_deamidation.py \
-  --data_file Data/dummy.csv \
+  --data_file Data/example.csv \
   --save_dir logs_esm \
   --batch_size 32 \
   --n_epochs 20 \
@@ -342,7 +344,7 @@ Deamid_GNN.py
 
 ```bash
 python Deamid_GNN.py \
-  --data_file Data/dummy.csv \
+  --data_file Data/example.csv \
   --structure_dir Structure_data/ \
   --save_dir logs_gnn \
   --batch_size 8 \
@@ -361,7 +363,7 @@ python Deamid_GNN.py \
 
 ```bash
 python Deamid_GNN.py \
-  --data_file Data/dummy.csv \
+  --data_file Data/example.csv \
   --structure_dir Structure_data/ \
   --save_dir logs_gnn_lora \
   --batch_size 8 \
@@ -421,16 +423,16 @@ python Deamid_GNN.py \
 1. Clone the repository
 2. Create the conda environment
 3. Download the ESM checkpoint into `esm_models/`
-4. Test the pipeline using the included `Data/dummy.csv` and example structure files in `Structure_data/`
-5. Replace the dummy/example data with your real CSV and real PDB files for actual experiments
+4. Test the pipeline using the included `Data/example.csv` and example structure files in `Structure_data/`
+5. Replace the example data with your real CSV and real PDB files for actual experiments
 6. Run `ESM_deamidation.py` for the sequence baseline
 7. Run `Deamid_GNN.py` for the structure-aware model
 
 ---
 
-## Dummy data note
+## Example data note
 
-The included `Data/dummy.csv` and the example files under `Structure_data/` are provided only to demonstrate the expected project layout, file formats, and execution workflow. They are not intended to represent the full dataset required for real model development, benchmarking, or final experiments.
+The included `Data/example.csv` and the example files under `Structure_data/` are provided only to demonstrate the expected project layout, file formats, and execution workflow. They are not intended to represent the full dataset required for real model development, benchmarking, or final experiments.
 
 For actual use, you should provide your own complete CSV dataset and matching structure files.
 
@@ -462,8 +464,8 @@ If `conda env create -f environment.yml` fails, remove any hardcoded `prefix:` l
 
 ## Notes
 
-- You can use the included dummy CSV and example structure files for a quick test run
-- Replace `Data/dummy.csv` with your actual dataset before real training
+- You can use the included example csv and example structure files for a quick test run
+- Replace `Data/example.csv` with your actual dataset before real training
 - Replace or extend the example structure files before running full experiments
 - Make sure the ESM checkpoint is downloaded locally before running either script
 - It is recommended to standardize both scripts to use the same `esm_models/` path
@@ -472,4 +474,3 @@ If `conda env create -f environment.yml` fails, remove any hardcoded `prefix:` l
 
 ## Acknowledgment
 
-This repository currently provides the training code, utility modules, and an example project layout. Users should replace the dummy data and add the real model files and structure files before running full experiments.
