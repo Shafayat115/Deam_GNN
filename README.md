@@ -471,6 +471,12 @@ If `conda env create -f environment.yml` fails, remove any hardcoded `prefix:` l
 - It is recommended to standardize both scripts to use the same `esm_models/` path
 
 ---
-
 ## Acknowledgment
 
+This repository was developed with support from AstraZeneca. We gratefully acknowledge AstraZeneca for supporting this work and the related research on machine-learning-based prediction of asparagine deamidation in biologics.
+
+If you use this repository in your work, please cite the following preprint:
+
+Ahmed S, et al. *Accurate Prediction of Asparagine Deamidation in Biologics Using Advanced Machine Learning Models*. bioRxiv. Published January 7, 2026. doi:10.64898/2026.01.06.697962.
+
+If you have questions, reach out to maryam.pouryahya@astrazeneca.com
