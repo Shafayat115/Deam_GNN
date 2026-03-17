@@ -2,16 +2,16 @@
 
 Deam_GNN contains training code for deamidation prediction using:
 
-- an **ESM-only baseline** (`ESM_deamidation.py`)
-- an **ESM + structure-aware GNN model** (`Deamid_GNN.py`)
+- An **ESM-only baseline** (`ESM_deamidation.py`)
+- An **ESM + structure-aware GNN model** (`Deamid_GNN.py`)
 
 The repository includes:
 
-- utility modules under `LM_GNN_utils/`
-- an example dataset under `Data/`
-- example structure files under `Structure_data/`
-- a data splitting script (`Data_Split.py`)
-- an `environment.yml` file for environment setup
+- Utility modules under `LM_GNN_utils/`
+- An example dataset under `Data/`
+- Example structure files under `Structure_data/`
+- A data splitting script (`Data_Split.py`)
+- An `environment.yml` file for environment setup
 
 The included CSV and structure files are **example/demo data only**. They are provided to show the expected format and workflow, not as a full training dataset.
 
