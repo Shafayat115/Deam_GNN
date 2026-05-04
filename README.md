@@ -1,3 +1,4 @@
+![Maturity level-0](https://img.shields.io/badge/Maturity%20Level-ML--0-red)
 
 ## Overview
 
@@ -492,4 +493,4 @@ If you use this repository in your work, please cite the following preprint:
 
 Ahmed S, et al. *Accurate Prediction of Asparagine Deamidation in Biologics Using Advanced Machine Learning Models*. bioRxiv. Published January 7, 2026. doi:10.64898/2026.01.06.697962.
 
-If you have questions, please reach out to maryam.pouryahya@astrazeneca.com.
+If you have questions, please reach out to maryam.pouryahya@astrazeneca.com and jared.delmar@astrazeneca.com.
