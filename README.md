@@ -12,6 +12,7 @@
 
 # Deam_GNN
 
+
 Deam_GNN provides machine-learning pipelines for predicting asparagine deamidation from protein sequence and structure. The repository includes a sequence-only ESM baseline and a structure-aware ESM+GNN model designed to capture both local sequence context and structural information relevant to deamidation susceptibility. This code accompanies our study on accurate deamidation prediction in biologics and is intended to support reproducible training, evaluation, and future extension of the proposed models.
 
 Deam_GNN contains training code for deamidation prediction using:
@@ -489,8 +490,10 @@ If `conda env create -f environment.yml` fails, remove any hardcoded `prefix:` l
 
 This repository was developed with support from AstraZeneca. We gratefully acknowledge AstraZeneca for supporting this work and the related research on machine-learning-based prediction of asparagine deamidation in biologics.
 
-If you use this repository in your work, please cite the following preprint:
+> If you use this repository in your work, please cite the following publication:
 
-Ahmed S, et al. *Accurate Prediction of Asparagine Deamidation in Biologics Using Advanced Machine Learning Models*. bioRxiv. Published January 7, 2026. doi:10.64898/2026.01.06.697962.
+Ahmed S, Swope N, Stanev V, Hofele R, WuDunn D, Jain R, Delmar J, Pouryahya M.
+*Accurate Prediction of Asparagine Deamidation in Biologics Using Advanced Machine Learning Models*.
+Briefings in Bioinformatics, 2026.
 
 If you have questions, please reach out to maryam.pouryahya@astrazeneca.com and jared.delmar@astrazeneca.com.
